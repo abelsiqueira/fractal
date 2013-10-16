@@ -3,7 +3,7 @@
 #include <math.h>
 
 #define USENORM2
-#define SIMPLE
+/*#define SIMPLE*/
 
 #ifdef WIDE
 #define LENX 1920
@@ -22,8 +22,8 @@
 #define CY 0.0
 #define R 1.0
 #define SCALE (LENX*1.0/LENY)
-#define EPS 1e-4
-#define KMAX 20
+#define EPS 1e-15
+#define KMAX 40
 #define DSOL 0.01
 #define BIG 1e10
 
