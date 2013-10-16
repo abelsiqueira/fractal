@@ -2,12 +2,29 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define USENORM2
+#define SIMPLE
+
+#ifdef WIDE
 #define LENX 1920
 #define LENY 1080
+#else
+#ifdef CELL
+#define LENX 1024
+#define LENY 768
+#else
+#define LENX 1000
+#define LENY 1000
+#endif
+#endif
+
+#define CX 0.0
+#define CY 0.0
+#define R 1.0
 #define SCALE (LENX*1.0/LENY)
-#define EPS 1e-2
+#define EPS 1e-4
 #define KMAX 20
-#define DSOL 0.8
+#define DSOL 0.01
 #define BIG 1e10
 
 typedef struct _point {
@@ -41,10 +58,18 @@ void eval (point *p, point *F, matrix *J) {
 }
 
 double norm (point *p) {
+#ifdef USENORM2
+  return sqrt(p->x*p->x + p->y*p->y);
+#else 
+#ifdef USENORM1
+  return fabs(p->x) + fabs(p->y);
+#else
   if (fabs(p->x) >= fabs(p->y))
     return fabs(p->x);
   else
     return fabs(p->y);
+#endif
+#endif
 }
 
 int newton (point *p) {
@@ -89,54 +114,78 @@ void print_point (point *p) {
   printf("x = %lf, y = %lf\n", p->x, p->y);
 }
 
-void fractal () {
+void writefile (int max) {
+  FILE *S = fopen("sol.b","r");
+  FILE *K = fopen("iters.b","r");
   FILE *f = fopen("fractal.ppm","w");
-  int N = LENX-1;
-  int M = LENY-1;
-  double hx = SCALE*2.0/LENX;
-  double hy = 2.0/LENY;
-  int i, j, v, k;
-  point p;
-  int s = 0;
-  fpos_t beg_pos;
-  int max = 1;
+  int i, j, s, k;
+  double p;
+  fprintf(f, "P3\n%d %d\n%d\n", LENX, LENY, max);
 
-  fgetpos(f, &beg_pos);
-  fprintf(f, "P3\n%d %d\n%d\n", LENX, LENY, KMAX);
-
-  for (j = 0; j <= M; j++) {
-    for (i = 0; i <= N; i++) {
-      p.x = -1*SCALE + i*hx;
-      p.y = -1 + j*hy;
-      k = newton(&p);
-#ifdef VERBOSE
-      print_point(&p);
-#endif
-#ifdef BETTER
-      v = KMAX-k;
-      if (v <= 0) v = 1;
-      else if (v > max) max = v;
+  for (j = 0; j < LENY; j++) {
+    for (i = 0; i < LENX; i++) {
+      fscanf(S, "%d", &s);
+      fscanf(K, "%d", &k);
+#ifdef SIMPLE
+      p = 1;
 #else
-      v = 1;
+      p = ((double) (max-k))/max;
+      p = p*p*p*max;
 #endif
-      s = close_to_solution(&p);
       if (s == 0)
         fprintf(f, "0 0 0\n");
       else if (s == 1)
-        fprintf(f, "%d 0 0\n", v);
+        fprintf(f, "%d 0 0\n", (int)p);
       else if (s == 2)
-        fprintf(f, "0 %d 0\n", v);
+        fprintf(f, "0 %d 0\n", (int)p);
       else if (s == 3)
-        fprintf(f, "0 0 %d\n", v);
+        fprintf(f, "0 0 %d\n", (int)p);
       else
-        fprintf(stderr, "FAIL: s=%d", s);
+        fprintf(f, "0 0 0\n");
     }
   }
 
-  fsetpos(f, &beg_pos);
-  fprintf(f, "P3\n%d %d\n%d\n", LENX, LENY, max);
-
   fclose(f);
+  fclose(S);
+  fclose(K);
+}
+
+void fractal () {
+  double hx = (2*R)/LENX;
+  double hy = (2*R)/LENY;
+  int i, j, k;
+  point p;
+  int s = 0;
+  int max = 1;
+  FILE *S = fopen("sol.b","w");
+  FILE *K = fopen("iters.b","w");
+  double rx = R, ry = R;
+
+  if (SCALE > 1) {
+    hx *= SCALE;
+    rx *= SCALE;
+  } else if (SCALE < 1) {
+    hy /= SCALE;
+    ry /= SCALE;
+  }
+
+  for (j = 0; j < LENY; j++) {
+    for (i = 0; i < LENX; i++) {
+      p.x = CX - rx + i*hx;
+      p.y = CY - ry + j*hy;
+      k = newton(&p);
+      s = close_to_solution(&p);
+      fprintf(S, "%d ", s);
+      fprintf(K, "%d ", k);
+#ifndef SIMPLE
+      if (k > max) max = k;
+#endif
+    }
+  }
+  fclose(S);
+  fclose(K);
+
+  writefile(max);
 }
 
 int main () {
