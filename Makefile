@@ -5,16 +5,21 @@ CXXFLAGS=$(CFLAGS)
 MODE=
 SIMPLE=
 
-wide: clean
-	make newton_fractal MODE=-DWIDE
-	make run
+OBJS = newton.o fractal.o
+EXECS = newton
 
-newton_fractal: newton_fractal.c
-	$(C) $< -o $@ $(CFLAGS) $(MODE) $(SIMPLE)
+all: $(OBJS) newton
 
-run:
-	./newton_fractal
+$(EXECS): %: %.o fractal.o
+	$(C) $^ -o $@ $(CFLAGS)
+
+%.o: %.c fractal.h
+	$(C) -c $< -o $@ $(CFLAGS) 
+
+run-%: %
+	./$<
 	convert fractal.ppm fractal.png
+	rm -f *.ppm *.b
 
 clean:
-	rm -f newton_fractal *.png *.ppm *.b
+	rm -f $(EXECS) $(OBJS) *.png *.ppm *.b
