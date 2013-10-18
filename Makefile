@@ -1,6 +1,6 @@
 C=gcc
 CXX=g++
-CFLAGS=-Wall -Wextra -ggdb -lm
+CFLAGS=-Wall -Wextra -ggdb -lm -DDEBUG
 CXXFLAGS=$(CFLAGS)
 MODE=
 SIMPLE=
@@ -17,7 +17,7 @@ $(EXECS): %: %.o fractal.o
 	$(C) -c $< -o $@ $(CFLAGS) 
 
 run-%: %
-	./$<
+	./$< $(ARGS)
 	convert fractal.ppm fractal.png
 	rm -f *.ppm *.b
 

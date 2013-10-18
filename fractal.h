@@ -34,12 +34,13 @@ void print_point (point *p);
 void initialize_options (options *opt);
 void writefile (int max, options *opt);
 void fractal (options *opt);
+void parse_options (int argc, char **argv, options *opt);
 
 /*
  * Expected from the file defining the iterative method
  */
 int iterative_method (point *p, options *opt);
 int close_to_solution (point *p, options *opt);
-void method_print (FILE *f, int s, int k, int max);
+void method_print (FILE *f, int s, int k, int max, options *opt);
 
 #endif

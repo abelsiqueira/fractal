@@ -51,11 +51,15 @@ int close_to_solution (point *p, options *opt) {
   return 0;
 }
 
-void method_print (FILE *f, int s, int k, int max) {
+void method_print (FILE *f, int s, int k, int max, options *opt) {
   int C[3] = {0, 0, 0};
   double p;
-  p = ((double) (max-k))/max;
-  p = p*p*p*max;
+  if (opt->simple == 1)
+    p = 1;
+  else {
+    p = ((double) (max-k))/max;
+    p = p*p*p*max;
+  }
   if (s != 0)
     C[s-1] = (int)p;
   fprintf (f, "%d %d %d\n", C[0], C[1], C[2]);

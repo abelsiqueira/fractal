@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include "fractal.h"
 
 double det (matrix *M) {
@@ -60,7 +61,7 @@ void writefile (int max, options *opt) {
     for (i = 0; i < opt->width; i++) {
       fscanf(S, "%d", &s);
       fscanf(K, "%d", &k);
-      method_print(f, s, k, max);
+      method_print(f, s, k, max, opt);
     }
   }
 
@@ -75,7 +76,7 @@ void fractal (options *opt) {
   int i, j, k;
   int s = 0;
   int max = 1;
-  double scale = opt->width/opt->height;
+  double scale = ((double)opt->width)/opt->height;
   FILE *S = fopen("sol.b","w");
   FILE *K = fopen("iters.b","w");
   double rx = opt->r, ry = opt->r;
@@ -97,9 +98,8 @@ void fractal (options *opt) {
       s = close_to_solution(&p, opt);
       fprintf(S, "%d ", s);
       fprintf(K, "%d ", k);
-#ifndef SIMPLE
-      if (k > max) max = k;
-#endif
+      if (opt->simple == 0 && k > max)
+        max = k;
     }
   }
   fclose(S);
@@ -108,9 +108,30 @@ void fractal (options *opt) {
   writefile(max, opt);
 }
 
-int main () {
+void parse_options (int argc, char **argv, options *opt) {
+  int i_aux, i;
+
+  for (i = 1; i < argc; i++) {
+    if (strcmp(argv[i],"-w") == 0) {
+      i_aux = strtol(argv[++i], NULL, 10);
+      opt->width = i_aux;
+    } else if (strcmp(argv[i],"-h") == 0) {
+      i_aux = strtol(argv[++i], NULL, 10);
+      opt->height = i_aux;
+    } else if (strcmp(argv[i],"-simple") == 0) {
+      opt->simple = 1;
+    }
+  }
+}
+
+int main (int argc, char **argv) {
   options opt;
+
   initialize_options(&opt);
+  parse_options(argc, argv, &opt);
+#ifdef DEBUG
+  printf("simple = %d\n", opt.simple);
+#endif
   fractal(&opt);
 
   return 0;
