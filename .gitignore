@@ -1,3 +1,7 @@
 *.[oa]
 *~
 *.swp
+newton
+*.png
+*.ppm
+*.b

@@ -10,7 +10,7 @@ void eval (point *p, point *F, matrix *J) {
   J->a22 = J->a11;
 }
 
-int iterative_method (point *p) {
+int iterative_method (point *p, options *opt) {
   int k = 0;
   int exitflag = 0;
   point F;
@@ -18,8 +18,8 @@ int iterative_method (point *p) {
 
   eval(p, &F, &J);
 
-  while (norm(&F) > EPS) {
-    if (norm(p) < EPS || norm(p) > BIG)
+  while (norm(&F) > opt->eps) {
+    if (norm(p) < opt->eps || norm(p) > BIG)
       return k;
     exitflag = solve (&J, &F);
     if (exitflag == 1)
@@ -27,26 +27,26 @@ int iterative_method (point *p) {
     p->x -= F.x;
     p->y -= F.y;
     k = k + 1;
-    if (k >= KMAX)
+    if (k >= opt->kmax)
       return k;
     eval(p, &F, &J);
   }
   return k;
 }
 
-int close_to_solution (point *p) {
+int close_to_solution (point *p, options *opt) {
   point dr;
   dr.x = p->x - 1;
   dr.y = p->y;
-  if (norm(&dr) < DSOL)
+  if (norm(&dr) < opt->dsol)
     return 1;
   dr.x = p->x + 0.5;
   dr.y = p->y - 0.86603;
-  if (norm(&dr) < DSOL)
+  if (norm(&dr) < opt->dsol)
     return 2;
   dr.x = p->x + 0.5;
   dr.y = p->y + 0.86603;
-  if (norm(&dr) < DSOL)
+  if (norm(&dr) < opt->dsol)
     return 3;
   return 0;
 }

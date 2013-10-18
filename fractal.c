@@ -37,15 +37,27 @@ void print_point (point *p) {
   printf("x = %lf, y = %lf\n", p->x, p->y);
 }
 
-void writefile (int max) {
+void initialize_options (options *opt) {
+  opt->width = 1000;
+  opt->height = 1000;
+  opt->cx = 0;
+  opt->cy = 0;
+  opt->r = 1;
+  opt->eps = 1e-6;
+  opt->kmax = 40;
+  opt->dsol = 1e-2;
+  opt->simple = 0;
+}
+
+void writefile (int max, options *opt) {
   FILE *S = fopen("sol.b","r");
   FILE *K = fopen("iters.b","r");
   FILE *f = fopen("fractal.ppm","w");
   int i, j, s, k;
-  fprintf(f, "P3\n%d %d\n%d\n", LENX, LENY, max);
+  fprintf(f, "P3\n%d %d\n%d\n", opt->width, opt->height, max);
 
-  for (j = 0; j < LENY; j++) {
-    for (i = 0; i < LENX; i++) {
+  for (j = 0; j < opt->height; j++) {
+    for (i = 0; i < opt->width; i++) {
       fscanf(S, "%d", &s);
       fscanf(K, "%d", &k);
       method_print(f, s, k, max);
@@ -57,31 +69,32 @@ void writefile (int max) {
   fclose(K);
 }
 
-void fractal () {
-  double hx = (2*R)/LENX;
-  double hy = (2*R)/LENY;
+void fractal (options *opt) {
+  double hx = (2*opt->r)/opt->width;
+  double hy = (2*opt->r)/opt->height;
   int i, j, k;
-  point p;
   int s = 0;
   int max = 1;
+  double scale = opt->width/opt->height;
   FILE *S = fopen("sol.b","w");
   FILE *K = fopen("iters.b","w");
-  double rx = R, ry = R;
+  double rx = opt->r, ry = opt->r;
+  point p;
 
-  if (SCALE > 1) {
-    hx *= SCALE;
-    rx *= SCALE;
-  } else if (SCALE < 1) {
-    hy /= SCALE;
-    ry /= SCALE;
+  if (scale > 1) {
+    hx *= scale;
+    rx *= scale;
+  } else if (scale < 1) {
+    hy /= scale;
+    ry /= scale;
   }
 
-  for (j = 0; j < LENY; j++) {
-    for (i = 0; i < LENX; i++) {
-      p.x = CX - rx + i*hx;
-      p.y = CY - ry + j*hy;
-      k = iterative_method(&p);
-      s = close_to_solution(&p);
+  for (j = 0; j < opt->height; j++) {
+    for (i = 0; i < opt->width; i++) {
+      p.x = opt->cx - rx + i*hx;
+      p.y = opt->cy - ry + j*hy;
+      k = iterative_method(&p, opt);
+      s = close_to_solution(&p, opt);
       fprintf(S, "%d ", s);
       fprintf(K, "%d ", k);
 #ifndef SIMPLE
@@ -92,11 +105,13 @@ void fractal () {
   fclose(S);
   fclose(K);
 
-  writefile(max);
+  writefile(max, opt);
 }
 
 int main () {
-  fractal();
+  options opt;
+  initialize_options(&opt);
+  fractal(&opt);
 
   return 0;
 }
