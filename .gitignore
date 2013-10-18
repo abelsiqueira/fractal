@@ -2,6 +2,7 @@
 *~
 *.swp
 newton
+mandelbrot
 *.png
 *.ppm
 *.b

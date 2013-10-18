@@ -5,10 +5,10 @@ CXXFLAGS=$(CFLAGS)
 MODE=
 SIMPLE=
 
-OBJS = newton.o fractal.o
-EXECS = newton
+OBJS = mandelbrot newton.o fractal.o
+EXECS = mandelbrot newton
 
-all: $(OBJS) newton
+all: $(OBJS) mandelbrot newton
 
 $(EXECS): %: %.o fractal.o
 	$(C) $^ -o $@ $(CFLAGS)

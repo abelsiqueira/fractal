@@ -2,6 +2,8 @@
 #define fractal_h
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #define USENORM2
 
@@ -27,6 +29,7 @@ typedef struct _options {
   int simple;
 } options;
 
+void hsv_to_rgb (double H[3], double C[3]);
 double det (matrix *M);
 int solve (matrix *M, point *p);
 double norm (point *p);

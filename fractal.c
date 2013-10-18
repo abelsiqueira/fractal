@@ -1,8 +1,35 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include <string.h>
 #include "fractal.h"
+
+void hsv_to_rgb (double H[3], double C[3]) {
+  int h = (int) (H[0]/60);
+  double f = H[0]/60.0 - h;
+  double p = H[2]*(1 - H[1]);
+  double q = H[2]*(1 - f*H[1]);
+  double t = H[2]*(1 - (1-f)*H[1]);
+  double r, g, b;
+
+  if (h == 6)
+    h = 0;
+
+  switch (h) {
+    case 0:
+      r = H[2]; g = t; b = p; break;
+    case 1:
+      r = q; g = H[2]; b = p; break;
+    case 2:
+      r = q; g = H[2]; b = t; break;
+    case 3:
+      r = p; g = q; b = H[2]; break;
+    case 4:
+      r = t; g = p; b = H[2]; break;
+    case 5:
+      r = H[2]; g = p; b = q; break;
+    default:
+      r = 0; g = 0; b = 0; break;
+  }
+  C[0] = r; C[1] = g; C[2] = b;
+}
 
 double det (matrix *M) {
   return M->a11*M->a22 - M->a12*M->a21;
@@ -39,13 +66,13 @@ void print_point (point *p) {
 }
 
 void initialize_options (options *opt) {
-  opt->width = 1000;
-  opt->height = 1000;
-  opt->cx = 0;
+  opt->width = 500;
+  opt->height = 500;
+  opt->cx = -0.5;
   opt->cy = 0;
   opt->r = 1;
-  opt->eps = 1e-6;
-  opt->kmax = 40;
+  opt->eps = 1e-12;
+  opt->kmax = 1000;
   opt->dsol = 1e-2;
   opt->simple = 0;
 }
@@ -98,12 +125,14 @@ void fractal (options *opt) {
       s = close_to_solution(&p, opt);
       fprintf(S, "%d ", s);
       fprintf(K, "%d ", k);
-      if (opt->simple == 0 && k > max)
-        max = k;
+      if (opt->simple == 0 && fabs(k) > max)
+        max = fabs(k);
     }
   }
   fclose(S);
   fclose(K);
+
+  printf("max = %d\n", max);
 
   writefile(max, opt);
 }
@@ -129,9 +158,6 @@ int main (int argc, char **argv) {
 
   initialize_options(&opt);
   parse_options(argc, argv, &opt);
-#ifdef DEBUG
-  printf("simple = %d\n", opt.simple);
-#endif
   fractal(&opt);
 
   return 0;
