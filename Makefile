@@ -1,14 +1,15 @@
 C=gcc
 CXX=g++
-CFLAGS=-Wall -Wextra -ggdb -lm -DDEBUG
+VERBOSE=-DVERBOSE
+CFLAGS=-Wall -Wextra -ggdb -lm -DDEBUG $(VERBOSE) -DROOTS="$(ROOTS)"
 CXXFLAGS=$(CFLAGS)
 MODE=
 SIMPLE=
 
-OBJS = mandelbrot newton.o fractal.o
-EXECS = mandelbrot newton
+OBJS = mandelbrot.o newton_classic.o newton_sin.o newton.o fractal.o
+EXECS = mandelbrot newton_classic newton_sin newton
 
-all: $(OBJS) mandelbrot newton
+all: $(OBJS) mandelbrot newton_classic newton_sin newton
 
 $(EXECS): %: %.o fractal.o
 	$(C) $^ -o $@ $(CFLAGS)

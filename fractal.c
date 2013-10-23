@@ -68,11 +68,11 @@ void print_point (point *p) {
 void initialize_options (options *opt) {
   opt->width = 500;
   opt->height = 500;
-  opt->cx = -0.5;
+  opt->cx = 0;
   opt->cy = 0;
-  opt->r = 1;
+  opt->r = 10;
   opt->eps = 1e-12;
-  opt->kmax = 1000;
+  opt->kmax = 100;
   opt->dsol = 1e-2;
   opt->simple = 0;
 }
@@ -121,8 +121,14 @@ void fractal (options *opt) {
     for (i = 0; i < opt->width; i++) {
       p.x = opt->cx - rx + i*hx;
       p.y = opt->cy - ry + j*hy;
+#ifdef VERBOSE
+      printf("C=(%lf,%lf), ", p.x, p.y);
+#endif
       k = iterative_method(&p, opt);
       s = close_to_solution(&p, opt);
+#ifdef VERBOSE
+      printf("k = %d, s = %d\n", k, s);
+#endif
       fprintf(S, "%d ", s);
       fprintf(K, "%d ", k);
       if (opt->simple == 0 && fabs(k) > max)
